@@ -1,0 +1,71 @@
+.POSIX:
+.SUFFIXES:
+.SUFFIXES: .c .o .uto
+
+VERSION    = 1.0.0
+
+CC         = @CC@
+CCOV       = gcov
+CFLAGS     = @CFLAGS@
+CFLAGS_COV = @CFLAGS_COV@
+CFLAGS_SAN = @CFLAGS_SAN@
+INCLUDEDIR = @PREFIX@/include
+LD         = @LD@
+LIBDIR     = @PREFIX@/lib
+PREFIX     = @PREFIX@
+
+.PHONY: all
+all: libescape.a
+
+libescape.a: escape.o
+	$(LD) -r $^ -o $@
+
+.c.o:
+	$(CC) $(CFLAGS) -DNDEBUG -c $< -o $@
+
+.c.uto:
+	$(CC) $(CFLAGS) $(CFLAGS_COV) $(CFLAGS_SAN) -I. -c $^ -o $@
+
+escape.coverage: escape.uto tests/test_escape.c
+	$(CC) $(CFLAGS) $(CFLAGS_COV) $(CFLAGS_SAN) -I. $^ -o $@
+	./$@
+	$(CCOV) escape.c
+	! grep "#####" escape.c.gcov |grep -ve "// UNREACHABLE$$"
+
+libescape.pc:
+	( echo 'Name: libescape' ;\
+	echo 'Version: $(VERSION)' ;\
+	echo 'Description: Simple shell-style escape of backslash and newline' ;\
+	echo 'prefix=$(PREFIX)' ;\
+	echo 'exec_prefix=$${prefix}' ;\
+	echo 'includedir=$${prefix}/include' ;\
+	echo 'libdir=$${prefix}/lib' ;\
+	echo 'Cflags: -I$${includedir}' ;\
+	echo 'Libs: -L$${libdir} -lescape' ) > $@
+
+.PHONY: test
+test: escape.coverage
+
+.PHONY: install
+install: escape.h libescape.a libescape.pc
+	mkdir -p $(DESTDIR)$(INCLUDEDIR)/libescape
+	mkdir -p $(DESTDIR)$(LIBDIR)/pkgconfig
+	install -m644 escape.h $(DESTDIR)$(INCLUDEDIR)/libescape/escape.h
+	install -m644 libescape.a $(DESTDIR)$(LIBDIR)/libescape.a
+	install -m644 libescape.pc $(DESTDIR)$(LIBDIR)/pkgconfig/libescape.pc
+
+.PHONY: uninstall
+uninstall:
+	rm -f $(DESTDIR)$(INCLUDEDIR)/libescape/escape.h
+	rm -f $(DESTDIR)$(LIBDIR)/libescape.a
+	rm -f $(DESTDIR)$(LIBDIR)/pkgconfig/libescape.pc
+
+.PHONY: clean
+clean:
+	rm -f *.o **/*.o *.uto **/*.uto *.gc?? **/*.gc?? *.coverage
+	rm -f libescape.a libescape.pc
+	rm -f test_readme*
+
+.PHONY: distclean
+distclean: clean
+	rm -f Makefile config.status
