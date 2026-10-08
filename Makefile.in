@@ -15,9 +15,9 @@ LIBDIR     = @PREFIX@/lib
 PREFIX     = @PREFIX@
 
 .PHONY: all
-all: libescape.a
+all: libesc.a
 
-libescape.a: escape.o
+libesc.a: escape.o
 	$(LD) -r $^ -o $@
 
 .c.o:
@@ -32,8 +32,8 @@ escape.coverage: escape.uto tests/test_escape.c
 	$(CCOV) escape.c
 	! grep "#####" escape.c.gcov |grep -ve "// UNREACHABLE$$"
 
-libescape.pc:
-	( echo 'Name: libescape' ;\
+libesc.pc:
+	( echo 'Name: libesc' ;\
 	echo 'Version: $(VERSION)' ;\
 	echo 'Description: Simple shell-style escape of backslash and newline' ;\
 	echo 'prefix=$(PREFIX)' ;\
@@ -41,29 +41,29 @@ libescape.pc:
 	echo 'includedir=$${prefix}/include' ;\
 	echo 'libdir=$${prefix}/lib' ;\
 	echo 'Cflags: -I$${includedir}' ;\
-	echo 'Libs: -L$${libdir} -lescape' ) > $@
+	echo 'Libs: -L$${libdir} -lesc' ) > $@
 
 .PHONY: test
 test: escape.coverage
 
 .PHONY: install
-install: escape.h libescape.a libescape.pc
-	mkdir -p $(DESTDIR)$(INCLUDEDIR)/libescape
+install: escape.h libesc.a libesc.pc
+	mkdir -p $(DESTDIR)$(INCLUDEDIR)/libesc
 	mkdir -p $(DESTDIR)$(LIBDIR)/pkgconfig
-	install -m644 escape.h $(DESTDIR)$(INCLUDEDIR)/libescape/escape.h
-	install -m644 libescape.a $(DESTDIR)$(LIBDIR)/libescape.a
-	install -m644 libescape.pc $(DESTDIR)$(LIBDIR)/pkgconfig/libescape.pc
+	install -m644 escape.h $(DESTDIR)$(INCLUDEDIR)/libesc/escape.h
+	install -m644 libesc.a $(DESTDIR)$(LIBDIR)/libesc.a
+	install -m644 libesc.pc $(DESTDIR)$(LIBDIR)/pkgconfig/libesc.pc
 
 .PHONY: uninstall
 uninstall:
-	rm -f $(DESTDIR)$(INCLUDEDIR)/libescape/escape.h
-	rm -f $(DESTDIR)$(LIBDIR)/libescape.a
-	rm -f $(DESTDIR)$(LIBDIR)/pkgconfig/libescape.pc
+	rm -f $(DESTDIR)$(INCLUDEDIR)/libesc/escape.h
+	rm -f $(DESTDIR)$(LIBDIR)/libesc.a
+	rm -f $(DESTDIR)$(LIBDIR)/pkgconfig/libesc.pc
 
 .PHONY: clean
 clean:
 	rm -f *.o **/*.o *.uto **/*.uto *.gc?? **/*.gc?? *.coverage
-	rm -f libescape.a libescape.pc
+	rm -f libesc.a libesc.pc
 	rm -f test_readme*
 
 .PHONY: distclean

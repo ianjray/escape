@@ -1,5 +1,5 @@
-#ifndef ESCAPE__H
-#define ESCAPE__H
+#ifndef LIBESC_ESCAPE_H_
+#define LIBESC_ESCAPE_H_
 
 /// Escape string @c s.
 /// Replace backslash with a backslash-backslash sequence.
